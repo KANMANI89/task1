@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Scoring Model - CodeAlpha</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #eef2f3;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 550px;
+            width: 100%;
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
+        }
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2980b9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2471a3;
+        }
+        #result {
+            margin-top: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Credit Scoring System</h2>
+    <div class="subtitle">CodeAlpha Machine Learning Internship - Task 1</div>
+    
+    <form id="predictionForm">
+        <div class="form-group">
+            <label>Age:</label>
+            <input type="number" name="age" placeholder="e.g. 30" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Annual Income ($):</label>
+            <input type="number" name="annual_income" placeholder="e.g. 65000" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Requested Loan Amount ($):</label>
+            <input type="number" name="loan_amount" placeholder="e.g. 20000" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Credit Score (300 - 850):</label>
+            <input type="number" name="credit_score" placeholder="e.g. 700" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Employment Duration (Years):</label>
+            <input type="number" name="employment_duration_years" placeholder="e.g. 5" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Existing Debts ($):</label>
+            <input type="number" name="existing_debts" placeholder="e.g. 2000" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Home Ownership:</label>
+            <select name="home_ownership">
+                <option value="RENT">RENT</option>
+                <option value="MORTGAGE">MORTGAGE</option>
+                <option value="OWN">OWN</option>
+            </select>
+        </div>
+        
+        <button type="submit">Predict Credit Worthiness</button>
+    </form>
+    
+    <div id="result"></div>
+</div>
+
+<script>
+    document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        // எண்களாக மாற்றுதல்
+        for(let key in data) {
+            if(key !== 'home_ownership') data[key] = parseFloat(data[key]);
+        }
+
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = "block";
+        
+        if(result.status === 'success') {
+            resultDiv.innerText = `Result: ${result.loan_status}\nProbability: ${result.approval_probability}`;
+            if(result.loan_status.includes("Approved")) {
+                resultDiv.style.background = "#d4edda";
+                resultDiv.style.color = "#155724";
+                resultDiv.style.border = "1px solid #c3e6cb";
+            } else {
+                resultDiv.style.background = "#f8d7da";
+                resultDiv.style.color = "#721c24";
+                resultDiv.style.border = "1px solid #f5c6cb";
+            }
+        } else {
+            resultDiv.innerText = "Error: " + result.message;
+            resultDiv.style.background = "#fff3cd";
+            resultDiv.style.color = "#856404";
+        }
+    });
+</script>
+
+</body>
+</html>
